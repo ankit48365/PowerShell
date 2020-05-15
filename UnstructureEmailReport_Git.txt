@@ -1,0 +1,51 @@
+#!/bin/ksh
+
+##################################################################### Defining Variables ##################################################################
+#Search_File  is the argument you will pass with the script as the name of the log you want to search
+	Search_File =$1
+#Directory to store O/P
+	Output_Directory=/home/logfile/   # Developer should define their directory here
+#Output File
+	Final_Output=Output.txt   
+#Mention the directory where the Log files are stored
+	cd /home/logs/  # Developer should define their directory here
+
+#Output File Header with System Start date time
+echo "*******************Create Time : $(date)***********************" > $Output_Directory/$Final_Output;
+
+######################################### Unstructured Data Extraction from Log File 1.0 Details ###########################################################
+################### Below you define the start (Start_Point) and end (End_Point) part of the Log for the section you want to filter ########################
+
+#Below "Source Load Summary" & "DIRECTOR> TM_6023" is the string i am searching for, developer can change it. [it should be hard coded in first place :)]
+Start_Point=`cat "$Search_File " | grep -n "Any matching string to be set for starting point" | cut -f 1 -d:`
+End_Point=`cat "$Search_File " | grep -n "Any ending string to be set for starting point" | cut -f 1 -d:`
+
+
+################################################ Method 1 - Search using Straing Pattern Match ##############################################################
+echo " " >> $Output_Directory/$Final_Output;
+echo "***************************Any Header you want to put / Record Count from Weekly Report etc********************" >> $Output_Directory/$Final_Output;
+echo " " >> $Output_Directory/$Final_Output;
+
+#Here you are writing the extracxted part in the log:
+sed -n "${Start_Point},${End_Point}p" $Search_File  >> $Output_Directory/$Final_Output;
+
+######################################################## Method 2 - Search using Loop #######################################################################
+#Now here too, we are extracting a part of the log, but with a different method, developer can use this method, 
+#if defining start and end point is not easy and developer wants to search all the matching patterns.
+#Knowing Disabled this Section - Developer can enable if needed
+
+	#echo " " >> $Output_Directory/$Final_Output;
+	#echo "*************************Any Header you want to put / Error Details from the Log***************************" >> $Output_Directory/$Final_Output;
+	#echo " " >> $Output_Directory/$Final_Output;
+
+#Below "TRANSF_XX> DBG_XX" is the string we are searching for, developer can change it. (it should be hard coded in first place :)
+	#cat "$Search_File " | grep -n "TRANSF_XX> DBG_XX" | cut -f 1 -d: >> $Output_Directory/$Final_Output;
+	#while read LINE
+	#do
+	#sed -n "${LINE}p" $Search_File  >> $Output_Directory/$Final_Output;
+	#echo " " >> $Output_Directory/$Final_Output;
+	#done < $Output_Directory/$Final_Output;
+
+############################################################ Sending Email with the O/P File ################################################################
+
+cat $Output_Directory/$Final_Output | mailx -s "Subject Header Here -$Search_File " EmailAdress@Domain.com; #Your Email Address 😊
